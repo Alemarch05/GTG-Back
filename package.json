@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "test:db": "tsx src/test-db.ts",
+  "test:db": "tsx src/tests/test-db.ts",
   "migrate": "tsx src/migrations/migrate.ts"
 },
   "keywords": [],

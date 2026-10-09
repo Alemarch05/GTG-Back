@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { pool } from './config/database';
+import { pool } from '../config/database';
 
 dotenv.config();
 
