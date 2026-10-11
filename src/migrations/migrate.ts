@@ -47,8 +47,6 @@ export async function runMigrations() {
 
 runMigrations().then(() => {
   console.log('Migraciones finalizadas');
-  process.exit(0);
 }).catch((err) => {
   console.error('Error en la migración:', err);
-  process.exit(1);
 });

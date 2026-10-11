@@ -14,16 +14,18 @@ export class UserService {
     if (existingUser) {
       throw new Error('El correo electrónico ya está registrado.');
     }
-
     if (!data.password) {
       throw new Error('La contraseña es obligatoria.');
     }
 
-    const saltRounds = 10;
+    const saltRounds = 10; // Número de rondas de sal para el hash de la contraseña el metodo hash de bcrypt 
+    // necesita un segundo parametro que es el numero de rondas de sal para el hash de la contraseña,
+    //  entre mas alto sea el numero mas seguro sera el hash pero tambien sera mas lento
     const hashedPassword = await bcrypt.hash(data.password, saltRounds);
 
     return await this.userRepository.create({
-      ...data,
+      ...data, // estos tres puntos son el operador Spread copiamos automaticamente todas las propiedades de data 
+      // y luego sobrescribimos únicamente la propiedad password con el valor encriptado (hashedPassword):
       password: hashedPassword,
     });
   }

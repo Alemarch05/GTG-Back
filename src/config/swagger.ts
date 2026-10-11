@@ -1,6 +1,6 @@
-const swaggerJSDoc = require('swagger-jsdoc');
+import swaggerJSDoc from 'swagger-jsdoc';
 
-const options = {
+const options: swaggerJSDoc.Options = {
   definition: {
     openapi: '3.0.0',
     info: {
