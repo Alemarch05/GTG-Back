@@ -9,7 +9,7 @@ const refreshTokenController = new RefreshTokenController();
  * /auth/logout:
  *   post:
  *     summary: Cerrar sesión revocando el refresh token actual
- *     tags: [Auth]
+ *     tags: [RefreshTokens]
  *     requestBody:
  *       required: true
  *       content:
@@ -33,7 +33,7 @@ router.post('/logout', (req, res) => refreshTokenController.logout(req, res));
  * /auth/revoke-all:
  *   post:
  *     summary: Revocar todas las sesiones del usuario
- *     tags: [Auth]
+ *     tags: [RefreshTokens]
  *     requestBody:
  *       required: true
  *       content:
