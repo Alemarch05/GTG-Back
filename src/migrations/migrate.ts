@@ -1,7 +1,7 @@
 import { pool } from '../config/database';
 
-const schema = [
-  {
+const schema = [ //1LLAVE
+  { //2LLAVE
     table: 'users',
     create: `
       CREATE TABLE IF NOT EXISTS public.users (
@@ -21,7 +21,7 @@ const schema = [
       { name: 'created_at', def: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' }
     ]
   }
-];
+]; //1LLAVE
 
 export async function runMigrations() {
   console.log('--- Ejecutando Migraciones ---');

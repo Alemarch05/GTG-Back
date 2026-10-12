@@ -29,4 +29,5 @@ export class UserService {
       password: hashedPassword,
     });
   }
+
 }
