@@ -3,6 +3,7 @@ import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger'; // 👈 Ruta corregida apuntando a src/config/swagger
 import { runMigrations } from './migrations/migrate';
+import refreshTokenRoutes from './routes/refreshToken.routes';
 import userRoutes from './routes/user.routes';
 
 dotenv.config();
@@ -17,6 +18,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Rutas de la API
 app.use('/api/users', userRoutes);
+app.use('/api/auth', refreshTokenRoutes);
 
 async function startServer() {
   try {
