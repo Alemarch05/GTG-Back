@@ -37,11 +37,60 @@ export class ContributionRepository {
       client.release();
     }
   }
+  // Obtener todos los aportes
+  async findAll(): Promise<Contribution[]> {
+    const res = await pool.query(`SELECT * FROM contributions ORDER BY created_at DESC;`);
+    return res.rows;
+  }
 
   // Obtener aportes de una campaña
   async findByCampaignId(campaignId: string): Promise<Contribution[]> {
     const query = `SELECT * FROM contributions WHERE campaign_id = $1 ORDER BY created_at DESC;`;
     const res = await pool.query(query, [campaignId]);
     return res.rows;
+  }
+  async findById(id: string): Promise<Contribution | null> {
+    const res = await pool.query(`SELECT * FROM contributions WHERE id = $1;`, [id]);
+    return res.rows[0] || null;
+  }
+
+  async updateStatus(id: string, status: 'RELEASED' | 'REFUNDED'): Promise<Contribution | null> {
+    const query = `
+      UPDATE contributions 
+      SET status = $1 
+      WHERE id = $2 
+      RETURNING *;
+    `;
+    const res = await pool.query(query, [status, id]);
+    return res.rows[0] || null;
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const findRes = await client.query(`SELECT * FROM contributions WHERE id = $1 FOR UPDATE;`, [id]);
+      if (findRes.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return false;
+      }
+
+      const contribution = findRes.rows[0];
+
+      await client.query(`DELETE FROM contributions WHERE id = $1;`, [id]);
+      await client.query(
+        `UPDATE campaigns SET current_amount = GREATEST(0, current_amount - $1) WHERE id = $2;`,
+        [contribution.amount, contribution.campaign_id]
+      );
+
+      await client.query('COMMIT');
+      return true;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 }

@@ -1,7 +1,7 @@
 import { pool } from '../config/database';
 
-const schema = [
-  {
+const schema = [ //1LLAVE
+  { //2LLAVE
     table: 'users',
     create: `
       CREATE TABLE IF NOT EXISTS public.users (
@@ -18,6 +18,46 @@ const schema = [
       { name: 'email', def: 'VARCHAR(150) UNIQUE NOT NULL' },
       { name: 'password', def: 'VARCHAR(255) NOT NULL' },
       { name: 'role', def: 'VARCHAR(20) NOT NULL DEFAULT \'USER\'' },
+      { name: 'created_at', def: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' }
+    ]
+  },
+  {
+      table: 'refresh_tokens',
+      create: `
+          CREATE TABLE IF NOT EXISTS refresh_tokens (
+          id SERIAL PRIMARY KEY,
+          user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          token_hash VARCHAR(255) NOT NULL UNIQUE,
+          expires_at TIMESTAMP NOT NULL,
+          is_revoked BOOLEAN DEFAULT FALSE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `,
+      columns: [
+        { name: 'user_id', def: 'UUID NOT NULL' },
+        { name: 'token_hash', def: 'VARCHAR(255) NOT NULL UNIQUE' },
+        { name: 'expires_at', def: 'TIMESTAMP NOT NULL' },
+        { name: 'is_revoked', def: 'BOOLEAN DEFAULT FALSE' },
+        { name: 'created_at', def: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' }
+    ],
+  },
+  {
+    table: 'contributions',
+    create: `
+      CREATE TABLE IF NOT EXISTS public.contributions (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        campaign_id UUID NOT NULL,
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+        amount NUMERIC(14, 2) NOT NULL CHECK (amount > 0),
+        status VARCHAR(20) NOT NULL DEFAULT 'HELD' CHECK (status IN ('HELD', 'RELEASED', 'REFUNDED')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `,
+    columns: [
+      { name: 'campaign_id', def: 'UUID NOT NULL' },
+      { name: 'user_id', def: 'UUID NOT NULL' },
+      { name: 'amount', def: 'NUMERIC(14, 2) NOT NULL' },
+      { name: 'status', def: "VARCHAR(20) NOT NULL DEFAULT 'HELD'" },
       { name: 'created_at', def: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' }
     ]
   }
