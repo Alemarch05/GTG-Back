@@ -41,4 +41,46 @@ export class ContributionController {
     return res.status(500).json({ error: error.message || 'Error interno del servidor' });
   }
 }
+
+// READ ONE BY ID
+  static async getById(req: Request, res: Response) {
+    try {
+      const id = req.params.id as string;
+      const contribution = await service.getContributionById(id);
+      return res.status(200).json({ data: contribution });
+    } catch (error: any) {
+      return res.status(404).json({ error: error.message || 'Aporte no encontrado' });
+    }
+  }
+
+  // UPDATE STATUS
+  static async updateStatus(req: Request, res: Response) {
+    try {
+      const id = req.params.id as string;
+      const { status } = req.body;
+
+      if (!status) {
+        return res.status(400).json({ error: 'El nuevo estado es obligatorio' });
+      }
+
+      const updatedContribution = await service.changeContributionStatus(id, status);
+      return res.status(200).json({
+        message: 'Estado del aporte actualizado con éxito',
+        data: updatedContribution
+      });
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message || 'Error al actualizar el aporte' });
+    }
+  }
+
+  // DELETE
+  static async delete(req: Request, res: Response) {
+    try {
+      const id = req.params.id as string;
+      await service.cancelContribution(id);
+      return res.status(200).json({ message: 'Aporte cancelado y descontado de la campaña con éxito' });
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message || 'Error al cancelar el aporte' });
+    }
+  }
 }   

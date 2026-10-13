@@ -18,4 +18,32 @@ export class ContributionService {
   async getCampaignContributions(campaignId: string): Promise<Contribution[]> {
     return await this.repository.findByCampaignId(campaignId);
   }
+
+  async getContributionById(id: string): Promise<Contribution> {
+    const contribution = await this.repository.findById(id);
+    if (!contribution) {
+      throw new Error('Aporte no encontrado');
+    }
+    return contribution;
+  }
+
+  async changeContributionStatus(id: string, status: 'HELD' | 'RELEASED' | 'REFUNDED'): Promise<Contribution> {
+    const validStatuses = ['HELD', 'RELEASED', 'REFUNDED'];
+    if (!validStatuses.includes(status)) {
+      throw new Error('Estado inválido para el aporte');
+    }
+
+    const updated = await this.repository.updateStatus(id, status);
+    if (!updated) {
+      throw new Error('Aporte no encontrado para actualizar');
+    }
+    return updated;
+  }
+
+  async cancelContribution(id: string): Promise<void> {
+    const deleted = await this.repository.delete(id);
+    if (!deleted) {
+      throw new Error('No se pudo cancelar el aporte. ID no encontrado.');
+    }
+  }
 }
