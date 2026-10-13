@@ -1,17 +1,17 @@
 import { pool } from '../config/database';
 
-const schema = [
-  {
+const schema = [ //1LLAVE
+  { //2LLAVE
     table: 'users',
     create: `
-      CREATE TABLE IF NOT EXISTS users (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        name VARCHAR(100) NOT NULL,
-        email VARCHAR(150) NOT NULL UNIQUE,
-        password VARCHAR(255) NOT NULL,
-        role VARCHAR(20) NOT NULL DEFAULT 'USER',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+      CREATE TABLE IF NOT EXISTS public.users (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name VARCHAR(100) NOT NULL,
+      email VARCHAR(150) NOT NULL UNIQUE,
+      password VARCHAR(255) NOT NULL,
+      role VARCHAR(20) NOT NULL DEFAULT 'USER',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
     `,
     columns: [
       { name: 'name', def: 'VARCHAR(100) NOT NULL' },
@@ -47,7 +47,27 @@ const schema = [
       { name: 'expires_at', def: 'TIMESTAMP NOT NULL' },
       { name: 'created_at', def: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' }
     ]
-  }
+  },
+  {
+      table: 'refresh_tokens',
+      create: `
+          CREATE TABLE IF NOT EXISTS refresh_tokens (
+          id SERIAL PRIMARY KEY,
+          user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          token_hash VARCHAR(255) NOT NULL UNIQUE,
+          expires_at TIMESTAMP NOT NULL,
+          is_revoked BOOLEAN DEFAULT FALSE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `,
+      columns: [
+        { name: 'user_id', def: 'UUID NOT NULL' },
+        { name: 'token_hash', def: 'VARCHAR(255) NOT NULL UNIQUE' },
+        { name: 'expires_at', def: 'TIMESTAMP NOT NULL' },
+        { name: 'is_revoked', def: 'BOOLEAN DEFAULT FALSE' },
+        { name: 'created_at', def: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' }
+    ],
+  },
 ];
 
 export async function runMigrations() {
@@ -56,9 +76,9 @@ export async function runMigrations() {
     await pool.query(entry.create);
 
     const { rows } = await pool.query(
-      `SELECT column_name FROM information_schema.columns WHERE table_name = $1`,
-      [entry.table]
-    );
+  `SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1`,
+  [entry.table]
+);
 
     const existing = rows.map((r: { column_name: string }) => r.column_name);
 
@@ -72,11 +92,8 @@ export async function runMigrations() {
   }
 }
 
-// ⚠️ IMPORTANTE: ESTA LÍNEA ES LA QUE HACE QUE SE EJECUTE
 runMigrations().then(() => {
-  console.log('🎉 Migraciones finalizadas');
-  process.exit(0);
+  console.log('Migraciones finalizadas');
 }).catch((err) => {
-  console.error('❌ Error en la migración:', err);
-  process.exit(1);
+  console.error('Error en la migración:', err);
 });
