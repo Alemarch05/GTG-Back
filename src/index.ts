@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import campaignRoutes from './routes/campaign.routes';
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger'; 
@@ -17,8 +18,16 @@ app.use(express.json());
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use('/api/users', userRoutes);
+<<<<<<< HEAD
 app.use('/api/contributions', contributionRoutes);
 app.use('/api/auth', refreshTokenRoutes);
+=======
+
+app.use('/api/users', userRoutes);
+
+app.use('/api/campaigns', campaignRoutes);
+
+>>>>>>> Miguel
 
 async function startServer() {
   try {
