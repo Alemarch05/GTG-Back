@@ -41,6 +41,26 @@ const schema = [ //1LLAVE
         { name: 'created_at', def: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' }
     ],
   },
+  {
+    table: 'contributions',
+    create: `
+      CREATE TABLE IF NOT EXISTS public.contributions (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        campaign_id UUID NOT NULL,
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+        amount NUMERIC(14, 2) NOT NULL CHECK (amount > 0),
+        status VARCHAR(20) NOT NULL DEFAULT 'HELD' CHECK (status IN ('HELD', 'RELEASED', 'REFUNDED')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `,
+    columns: [
+      { name: 'campaign_id', def: 'UUID NOT NULL' },
+      { name: 'user_id', def: 'UUID NOT NULL' },
+      { name: 'amount', def: 'NUMERIC(14, 2) NOT NULL' },
+      { name: 'status', def: "VARCHAR(20) NOT NULL DEFAULT 'HELD'" },
+      { name: 'created_at', def: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' }
+    ]
+  }
 ];
 
 export async function runMigrations() {

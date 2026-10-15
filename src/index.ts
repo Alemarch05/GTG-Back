@@ -5,6 +5,7 @@ import { swaggerSpec } from './config/swagger';
 import { runMigrations } from './migrations/migrate';
 import refreshTokenRoutes from './routes/refreshToken.routes';
 import userRoutes from './routes/user.routes';
+import contributionRoutes from './routes/contribution.routes';
 
 dotenv.config();
 
@@ -16,8 +17,8 @@ app.use(express.json());
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use('/api/users', userRoutes);
+app.use('/api/contributions', contributionRoutes);
 app.use('/api/auth', refreshTokenRoutes);
-
 
 async function startServer() {
   try {
