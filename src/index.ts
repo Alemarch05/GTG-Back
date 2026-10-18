@@ -1,8 +1,9 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
-import { swaggerSpec } from './config/swagger'; // 👈 Ruta corregida apuntando a src/config/swagger
+import { swaggerSpec } from './config/swagger';
 import { runMigrations } from './migrations/migrate';
+import campaignRoutes from './routes/campaign.routes'; 
 import refreshTokenRoutes from './routes/refreshToken.routes';
 import userRoutes from './routes/user.routes';
 
@@ -19,6 +20,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Rutas de la API
 app.use('/api/users', userRoutes);
 app.use('/api/auth', refreshTokenRoutes);
+app.use('/api/campaigns', campaignRoutes); 
 
 async function startServer() {
   try {
