@@ -48,4 +48,8 @@ export class ContributionService {
       throw new Error('No se pudo cancelar, el aporte no existe');
     }
   }
+
+  async settleExpired(): Promise<number> {
+  return await this.repository.processExpiredCampaigns();
+}
 }

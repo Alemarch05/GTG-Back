@@ -7,6 +7,7 @@ import { runMigrations } from './migrations/migrate';
 import refreshTokenRoutes from './routes/refreshToken.routes';
 import userRoutes from './routes/user.routes';
 import contributionRoutes from './routes/contribution.routes';
+import { CronService } from './services/cron.service';
 
 dotenv.config();
 
@@ -18,20 +19,19 @@ app.use(express.json());
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use('/api/users', userRoutes);
-<<<<<<< HEAD
 app.use('/api/contributions', contributionRoutes);
 app.use('/api/auth', refreshTokenRoutes);
-=======
 
 app.use('/api/users', userRoutes);
 
 app.use('/api/campaigns', campaignRoutes);
 
->>>>>>> Miguel
 
 async function startServer() {
   try {
     await runMigrations();
+
+    CronService.initCronJobs();
 
     app.listen(PORT, () => {
       console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
@@ -41,5 +41,6 @@ async function startServer() {
     console.error('Error al iniciar el servidor:', error);
   }
 }
+
 
 startServer();

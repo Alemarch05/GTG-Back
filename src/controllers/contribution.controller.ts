@@ -86,4 +86,16 @@ static async getAll(req: Request, res: Response) {
       return res.status(400).json({ error: error.message });
     }
   }
+
+  static async settleExpiredCampaigns(req: Request, res: Response) {
+  try {
+    const processed = await service.settleExpired();
+    return res.status(200).json({
+      message: 'Proceso de expiración All-or-Nothing ejecutado',
+      processedCampaigns: processed
+    });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message || 'Error al ejecutar la expiración' });
+  }
+}
 }   
