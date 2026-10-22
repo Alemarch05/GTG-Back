@@ -14,7 +14,6 @@ export class AuthService {
     this.refreshTokenRepository = new RefreshTokenRepository();
   }
 
-  // Helper para sacar el hash del token
   private hashToken(token: string): string {
     return crypto.createHash('sha256').update(token).digest('hex');
   }

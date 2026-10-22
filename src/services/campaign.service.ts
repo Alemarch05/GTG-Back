@@ -1,21 +1,30 @@
-import { CampaignRepository } from '../repositories/campaign.repository';
-import { Campaign } from '../types/campaign.types';
+import { CampaignRepository, CampaignData } from '../repositories/campaign.repository';
 
 export class CampaignService {
-  private campaignRepository: CampaignRepository;
+  private repository: CampaignRepository;
 
   constructor() {
-    this.campaignRepository = new CampaignRepository();
+    this.repository = new CampaignRepository();
   }
 
-  async getAllCampaigns(): Promise<Campaign[]> {
-    return await this.campaignRepository.findAll();
+  async createCampaign(data: CampaignData) {
+    if (!data.userId || !data.title || !data.targetAmount || !data.expiresAt) {
+      throw new Error('Faltan campos obligatorios');
+    }
+    if (data.targetAmount <= 0) {
+      throw new Error('El monto objetivo debe ser mayor a 0');
+    }
+    return await this.repository.create(data);
   }
 
-  async getCampaignById(id: string): Promise<Campaign> {
-    const campaign = await this.campaignRepository.findById(id);
+  async getAllCampaigns() {
+    return await this.repository.findAll();
+  }
+
+  async getCampaignById(id: string) {
+    const campaign = await this.repository.findById(id);
     if (!campaign) {
-      throw new Error('CAMPAIGN_NOT_FOUND');
+      throw new Error('Campaña no encontrada');
     }
     return campaign;
   }

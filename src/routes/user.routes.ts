@@ -3,6 +3,9 @@ import { UserController } from '../controllers/user.controller';
 
 const router = Router();
 const userController = new UserController();
+//es una anotación de JSDoc OpenAPI que lee la librería swagger-jsdoc.
+//Su función es generar automáticamente la documentación interactiva en Swagger UI 
+// (http://localhost:3000/docs) a partir del propio código de las rutas.
 
 /**
  * @openapi
