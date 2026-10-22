@@ -18,16 +18,13 @@ app.use(express.json());
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use('/api/users', userRoutes);
-<<<<<<< HEAD
 app.use('/api/contributions', contributionRoutes);
 app.use('/api/auth', refreshTokenRoutes);
-=======
 
 app.use('/api/users', userRoutes);
 
 app.use('/api/campaigns', campaignRoutes);
 
->>>>>>> Miguel
 
 async function startServer() {
   try {
