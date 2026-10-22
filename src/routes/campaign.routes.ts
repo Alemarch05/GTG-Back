@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { CampaignController } from '../controllers/campaign.controller';
+import { authenticateToken } from '../middlewares/auth.middleware';
 
 const router = Router();
 const campaignController = new CampaignController();
@@ -48,7 +49,7 @@ router.post('/', (req, res) => campaignController.create(req, res));
  *       200:
  *         description: Lista de campañas obtenida exitosamente
  */
-router.get('/', (req, res) => campaignController.getAll(req, res));
+router.get('/', authenticateToken, (req, res) => campaignController.getAll(req, res));
 
 /**
  * @openapi
