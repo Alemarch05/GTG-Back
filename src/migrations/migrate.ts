@@ -1,7 +1,7 @@
 import { pool } from '../config/database';
 
-const schema = [
-  {
+const schema = [ //1LLAVE
+  { //2LLAVE
     table: 'users',
     create: `
       CREATE TABLE IF NOT EXISTS public.users (
@@ -18,6 +18,33 @@ const schema = [
       { name: 'email', def: 'VARCHAR(150) UNIQUE NOT NULL' },
       { name: 'password', def: 'VARCHAR(255) NOT NULL' },
       { name: 'role', def: 'VARCHAR(20) NOT NULL DEFAULT \'USER\'' },
+      { name: 'created_at', def: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' }
+    ]
+  }
+
+  ,{
+    table: 'campaigns',
+    create: `
+      CREATE TABLE IF NOT EXISTS campaigns (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        target_amount NUMERIC(14, 2) NOT NULL CHECK (target_amount > 0),
+        current_amount NUMERIC(14, 2) NOT NULL DEFAULT 0.00,
+        status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `,
+    columns: [
+      { name: 'user_id', def: 'UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE' },
+      { name: 'title', def: 'VARCHAR(255) NOT NULL' },
+      { name: 'description', def: 'TEXT NOT NULL' },
+      { name: 'target_amount', def: 'NUMERIC(14, 2) NOT NULL' },
+      { name: 'current_amount', def: 'NUMERIC(14, 2) NOT NULL DEFAULT 0.00' },
+      { name: 'status', def: "VARCHAR(50) NOT NULL DEFAULT 'ACTIVE'" },
+      { name: 'expires_at', def: 'TIMESTAMP NOT NULL' },
       { name: 'created_at', def: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' }
     ]
   },
@@ -41,6 +68,26 @@ const schema = [
         { name: 'created_at', def: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' }
     ],
   },
+  {
+    table: 'contributions',
+    create: `
+      CREATE TABLE IF NOT EXISTS public.contributions (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        campaign_id UUID NOT NULL,
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+        amount NUMERIC(14, 2) NOT NULL CHECK (amount > 0),
+        status VARCHAR(20) NOT NULL DEFAULT 'HELD' CHECK (status IN ('HELD', 'RELEASED', 'REFUNDED')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `,
+    columns: [
+      { name: 'campaign_id', def: 'UUID NOT NULL' },
+      { name: 'user_id', def: 'UUID NOT NULL' },
+      { name: 'amount', def: 'NUMERIC(14, 2) NOT NULL' },
+      { name: 'status', def: "VARCHAR(20) NOT NULL DEFAULT 'HELD'" },
+      { name: 'created_at', def: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' }
+    ]
+  }
 ];
 
 export async function runMigrations() {
