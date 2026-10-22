@@ -3,9 +3,9 @@ import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 import { runMigrations } from './migrations/migrate';
-import campaignRoutes from './routes/campaign.routes'; 
 import refreshTokenRoutes from './routes/refreshToken.routes';
 import userRoutes from './routes/user.routes';
+import authRoutes from './routes/auth.routes';
 
 dotenv.config();
 
@@ -20,7 +20,8 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Rutas de la API
 app.use('/api/users', userRoutes);
 app.use('/api/auth', refreshTokenRoutes);
-app.use('/api/campaigns', campaignRoutes); 
+app.use('/api/auth', authRoutes);
+
 
 async function startServer() {
   try {
@@ -29,11 +30,11 @@ async function startServer() {
 
     // 2. Levantar el servidor HTTP
     app.listen(PORT, () => {
-      console.log(`🚀 Servidor ejecutándose en http://localhost:${PORT}`);
-      console.log(`📄 Documentación Swagger disponible en http://localhost:${PORT}/docs`);
+      console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+      console.log(`Documentación Swagger disponible en http://localhost:${PORT}/docs`);
     });
   } catch (error) {
-    console.error('❌ Error al iniciar el servidor:', error);
+    console.error('Error al iniciar el servidor:', error);
   }
 }
 
