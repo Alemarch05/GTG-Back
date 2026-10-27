@@ -7,7 +7,25 @@ export class ContributionRepository {
     const client = await pool.connect();
     try {
       await client.query('BEGIN'); // Transacción ACID
+      
+      const queryCampaign = `
+        SELECT current_amount, target_amount, status, expires_at 
+        FROM campaigns 
+        WHERE id = $1 FOR UPDATE;
+      `;
+      const campaignRes = await client.query(queryCampaign, [data.campaign_id]);
 
+      if (campaignRes.rows.length === 0) {
+        throw new Error('Campaña no encontrada');
+      }
+      const campaign = campaignRes.rows[0];
+
+      if (campaign.status !== 'ACTIVE') {
+        throw new Error('La campaña no está activa para recibir aportes');
+      }
+      if (new Date(campaign.expires_at) < new Date()) {
+        throw new Error('La campaña ya ha expirado');
+      }
       // Insertar el aporte en custodia
       const queryContribution = `
         INSERT INTO contributions (campaign_id, user_id, amount, status)
@@ -20,12 +38,21 @@ export class ContributionRepository {
         data.amount
       ]);
 
+      const newAmount = parseFloat(campaign.current_amount) + data.amount;
+      let newCampaignStatus = campaign.status;
+
+      if (newAmount >= parseFloat(campaign.target_amount)) {
+        newCampaignStatus = 'SUCCESSFUL';
+      }
+
       // Sumar al acumulado de la campaña
       const queryUpdateCampaign = `
         UPDATE campaigns 
         SET current_amount = $1, status = $2 
         WHERE id = $3;
       `;
+
+      await client.query(queryUpdateCampaign, [newAmount, newCampaignStatus, data.campaign_id]);
       
       
       await client.query('COMMIT');
