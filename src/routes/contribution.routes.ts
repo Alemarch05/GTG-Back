@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { ContributionController } from '../controllers/contribution.controller';
+import { authenticateToken } from '../middlewares/auth.middleware';
 
 const router = Router();
 
@@ -42,7 +43,7 @@ const router = Router();
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/', (req, res) => ContributionController.create(req, res));
+router.post('/', authenticateToken, (req, res) => ContributionController.create(req, res));
 router.get('/', (req, res) => ContributionController.getAll(req, res));
 
 /**
