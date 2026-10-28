@@ -12,3 +12,7 @@ export interface CreateContributionDTO {
   user_id: string;
   amount: number;
 }
+
+export interface SettlementResult {
+  processedCampaigns: number;
+}

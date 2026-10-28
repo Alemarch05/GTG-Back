@@ -37,7 +37,7 @@ const campaignController = new CampaignController();
  *       400:
  *         description: Error en la validación de datos
  */
-router.post('/', (req, res) => campaignController.create(req, res));
+router.post('/', authenticateToken, (req, res) => campaignController.create(req, res));
 
 /**
  * @openapi
@@ -70,6 +70,6 @@ router.get('/', authenticateToken, (req, res) => campaignController.getAll(req, 
  *       404:
  *         description: Campaña no encontrada
  */
-router.get('/:id', (req, res) => campaignController.getById(req, res));
+router.get('/:id', authenticateToken, (req, res) => campaignController.getById(req, res));
 
 export default router;
