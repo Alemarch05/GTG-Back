@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
+import cors from 'cors';
 import { swaggerSpec } from './config/swagger';
 import { runMigrations } from './migrations/migrate';
 import refreshTokenRoutes from './routes/refreshToken.routes';
@@ -14,7 +15,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
+app.use(cors())
 app.use(express.json());
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
