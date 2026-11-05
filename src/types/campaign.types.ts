@@ -11,3 +11,10 @@ export interface Campaign {
   created_at: Date;
   updated_at: Date;
 }
+
+export interface UpdateCampaignDTO {
+  title?: string;
+  description?: string;
+  target_amount?: number;
+  expires_at?: Date | string;
+}

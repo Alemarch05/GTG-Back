@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { CampaignService } from '../services/campaign.service';
 
+const service = new CampaignService();
+
 export class CampaignController {
   private service: CampaignService;
 
@@ -32,6 +34,35 @@ export class CampaignController {
       return res.status(200).json(campaign);
     } catch (error: any) {
       return res.status(404).json({ error: error.message });
+    }
+  }
+
+  static async update(req: Request, res: Response) {
+    try {
+      const id = req.params.id as string; // <--- Añade "as string"
+      const userId = (req as any).user?.id || req.body.user_id;
+      const updateData = req.body;
+
+      const updated = await service.updateCampaign(id, userId, updateData);
+      return res.status(200).json({ message: 'Campaña actualizada', data: updated });
+    } catch (error: any) {
+      if (error.message.startsWith('403')) return res.status(403).json({ error: error.message });
+      if (error.message.startsWith('404')) return res.status(404).json({ error: error.message });
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
+  static async delete(req: Request, res: Response) {
+    try {
+      const id = req.params.id as string; // <--- Añade "as string"
+      const userId = (req as any).user?.id || req.body.user_id;
+
+      await service.deleteCampaign(id, userId);
+      return res.status(200).json({ message: 'Campaña eliminada exitosamente' });
+    } catch (error: any) {
+      if (error.message.startsWith('403')) return res.status(403).json({ error: error.message });
+      if (error.message.startsWith('404')) return res.status(404).json({ error: error.message });
+      return res.status(400).json({ error: error.message });
     }
   }
 }
