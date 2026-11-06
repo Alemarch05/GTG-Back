@@ -4,17 +4,25 @@ import { ContributionService } from '../services/contribution.service';
 const service = new ContributionService();
 
 export class ContributionController {
+  
   static async create(req: Request, res: Response) {
     try {
-      const { campaign_id, user_id, amount } = req.body;
+      // 1. Extraer userId del token JWT (ignora cualquier user_id enviado en el body)
+      const userId = (req as any).user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'No autenticado' });
+      }
 
-      if (!campaign_id || !user_id || !amount) {
-        return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+      const { campaign_id, amount } = req.body;
+
+      if (!campaign_id || !amount) {
+        return res.status(400).json({ error: 'El ID de la campaña y el monto son obligatorios' });
       }
 
       const contribution = await service.makeContribution({
         campaign_id,
-        user_id,
+        user_id: userId, // Se asigna el del token por seguridad
         amount: Number(amount)
       });
 
@@ -23,26 +31,46 @@ export class ContributionController {
         data: contribution
       });
     } catch (error: any) {
+      // Manejo de códigos HTTP específicos que envía nuestro servicio
+      if (error.message.startsWith('403')) return res.status(403).json({ error: error.message });
+      if (error.message.startsWith('404')) return res.status(404).json({ error: error.message });
+      if (error.message.startsWith('400')) return res.status(400).json({ error: error.message });
+      
       return res.status(500).json({ error: error.message || 'Error interno del servidor' });
     }
   }
 
-    static async getByCampaign(req: Request, res: Response) {
-  try {
-    const campaignId = req.params.campaignId as string;
+  // NUEVO: Método para obtener el historial del usuario autenticado
+  static async getMyHistory(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: 'No autenticado' });
+      }
 
-    if (!campaignId) {
-      return res.status(400).json({ error: 'El ID de la campaña es obligatorio' });
+      const history = await service.getMyHistory(userId);
+      return res.status(200).json({ data: history });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message || 'Error interno del servidor' });
     }
-
-    const contributions = await service.getCampaignContributions(campaignId);
-    return res.status(200).json({ data: contributions });
-  } catch (error: any) {
-    return res.status(500).json({ error: error.message || 'Error interno del servidor' });
   }
-}
-//...
-static async getAll(req: Request, res: Response) {
+
+  static async getByCampaign(req: Request, res: Response) {
+    try {
+      const campaignId = req.params.campaignId as string;
+
+      if (!campaignId) {
+        return res.status(400).json({ error: 'El ID de la campaña es obligatorio' });
+      }
+
+      const contributions = await service.getCampaignContributions(campaignId);
+      return res.status(200).json({ data: contributions });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message || 'Error interno del servidor' });
+    }
+  }
+
+  static async getAll(req: Request, res: Response) {
     try {
       const contributions = await service.getAllContributions();
       return res.status(200).json({ data: contributions });
@@ -77,25 +105,16 @@ static async getAll(req: Request, res: Response) {
     }
   }
 
-  static async delete(req: Request, res: Response) {
+  static async settleExpiredCampaigns(req: Request, res: Response) {
     try {
-      const id = req.params.id as string;
-      await service.cancelContribution(id);
-      return res.status(200).json({ message: 'Aporte cancelado exitosamente' });
+      const processed = await service.settleExpired();
+      return res.status(200).json({
+        message: 'Proceso de expiración All-or-Nothing ejecutado',
+        processedCampaigns: processed
+      });
     } catch (error: any) {
-      return res.status(400).json({ error: error.message });
+      return res.status(500).json({ error: error.message || 'Error al ejecutar la expiración' });
     }
   }
 
-  static async settleExpiredCampaigns(req: Request, res: Response) {
-  try {
-    const processed = await service.settleExpired();
-    return res.status(200).json({
-      message: 'Proceso de expiración All-or-Nothing ejecutado',
-      processedCampaigns: processed
-    });
-  } catch (error: any) {
-    return res.status(500).json({ error: error.message || 'Error al ejecutar la expiración' });
-  }
 }
-}   

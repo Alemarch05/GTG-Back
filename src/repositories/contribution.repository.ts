@@ -85,6 +85,24 @@ export class ContributionRepository {
     return res.rows;
   }
 
+  async findHistoryByUserId(userId: string) {
+    const query = `
+      SELECT 
+        con.id AS contribution_id,
+        con.amount,
+        con.created_at,
+        camp.id AS campaign_id,
+        camp.title AS campaign_title,
+        camp.status AS campaign_status
+      FROM contributions con
+      INNER JOIN campaigns camp ON con.campaign_id = camp.id
+      WHERE con.user_id = $1
+      ORDER BY con.created_at DESC;
+    `;
+    const result = await pool.query(query, [userId]);
+    return result.rows;
+  }
+
   // 5. Obtener un aporte por ID
   async findById(id: string): Promise<Contribution | null> {
     const res = await pool.query(`SELECT * FROM contributions WHERE id = $1;`, [id]);

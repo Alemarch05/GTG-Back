@@ -48,6 +48,22 @@ router.get('/', (req, res) => ContributionController.getAll(req, res));
 
 /**
  * @openapi
+ * /contributions/me:
+ *   get:
+ *     summary: Obtener el historial de aportes del usuario autenticado
+ *     tags: [Contributions]
+ *     responses:
+ *       200:
+ *         description: Historial de aportes y total aportado obtenido exitosamente
+ *       401:
+ *         description: No autenticado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/me', authenticateToken, (req, res) => ContributionController.getMyHistory(req, res));
+
+/**
+ * @openapi
  * /contributions/campaign/{campaignId}:
  *   get:
  *     summary: Obtener todos los aportes asociados a una campaña
@@ -102,7 +118,6 @@ router.get('/campaign/:campaignId', (req, res) => ContributionController.getByCa
  *         description: Error al cancelar el aporte o ID no encontrado
  */
 router.get('/:id', (req, res) => ContributionController.getById(req, res));
-router.delete('/:id', (req, res) => ContributionController.delete(req, res));
 
 /**
  * @openapi
