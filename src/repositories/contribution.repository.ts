@@ -91,6 +91,7 @@ export class ContributionRepository {
         con.id AS contribution_id,
         con.amount,
         con.created_at,
+        con.status,
         camp.id AS campaign_id,
         camp.title AS campaign_title,
         camp.status AS campaign_status
