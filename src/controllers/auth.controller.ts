@@ -14,12 +14,25 @@ export class AuthController {
     }
   }
 
+  async refresh(req: Request, res: Response): Promise<void> {
+    try {
+      const { refreshToken } = req.body;
+      if (!refreshToken) {
+        res.status(400).json({ success: false, error: 'Refresh token es requerido.' });
+        return;
+      }
+      const result = await authService.refresh(refreshToken);
+      res.status(200).json({ success: true, data: result });
+    } catch (error: any) {
+      res.status(403).json({ success: false, error: error.message });
+    }
+  }
+
   async logout(req: Request, res: Response): Promise<void> {
     try {
-      const authHeader = req.headers['authorization'];
-      const token = authHeader && authHeader.split(' ')[1];
-      if (token) {
-        await authService.logout(token);
+      const { refreshToken } = req.body;
+      if (refreshToken) {
+        await authService.logout(refreshToken);
       }
       res.status(200).json({ success: true, message: 'Sesión cerrada exitosamente.' });
     } catch (error: any) {

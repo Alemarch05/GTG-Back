@@ -21,17 +21,13 @@ export async function authenticateToken(req: AuthenticatedRequest, res: Response
     return res.status(401).json({ success: false, message: 'Acceso denegado. Token no proporcionado.' });
   }
 
+  if (!process.env.JWT_SECRET) {
+    throw new Error('CRITICAL ERROR: La variable de entorno JWT_SECRET no está definida.');
+  }
+
   try {
-    const secret = process.env.JWT_SECRET || 'secret_key';
-    const decoded = jwt.verify(token, secret) as { id: string; email: string; role: string };
-
-    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-    const dbToken = await refreshTokenRepo.findByTokenHash(tokenHash);
-
-    if (!dbToken || dbToken.is_revoked) {
-      return res.status(401).json({ success: false, message: 'Token revocado o sesión finalizada.' });
-    }
-
+    const decoded = jwt.verify(token, process.env.JWT_SECRET) as { id: string; email: string; role: string };
+    
     req.user = decoded;
     next();
   } catch (error) {

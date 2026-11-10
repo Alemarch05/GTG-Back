@@ -31,6 +31,30 @@ router.post('/login', (req, res) => authController.login(req, res));
 
 /**
  * @openapi
+ * /auth/refresh:
+ *   post:
+ *     summary: Renovar tokens de sesión
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Tokens renovados
+ */
+router.post('/refresh', (req, res) => authController.refresh(req, res));
+
+// Cambiar la ruta de logout para que no requiera JWT obligatoriamente (solo el body)
+router.post('/logout', (req, res) => authController.logout(req, res));
+
+/**
+ * @openapi
  * /auth/logout:
  *   post:
  *     summary: Cerrar sesión revocando el token actual
