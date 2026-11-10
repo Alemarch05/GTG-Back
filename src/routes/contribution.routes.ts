@@ -44,7 +44,7 @@ const router = Router();
  *         description: Error interno del servidor
  */
 router.post('/', authenticateToken, (req, res) => ContributionController.create(req, res));
-router.get('/', (req, res) => ContributionController.getAll(req, res));
+router.get('/', authenticateToken, (req, res) => ContributionController.getAll(req, res));
 
 /**
  * @openapi
@@ -81,7 +81,7 @@ router.get('/me', authenticateToken, (req, res) => ContributionController.getMyH
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/campaign/:campaignId', (req, res) => ContributionController.getByCampaign(req, res));
+router.get('/campaign/:campaignId', authenticateToken, (req, res) => ContributionController.getByCampaign(req, res));
 
 /**
  * @openapi
@@ -117,7 +117,7 @@ router.get('/campaign/:campaignId', (req, res) => ContributionController.getByCa
  *       400:
  *         description: Error al cancelar el aporte o ID no encontrado
  */
-router.get('/:id', (req, res) => ContributionController.getById(req, res));
+router.get('/:id', authenticateToken, (req, res) => ContributionController.getById(req, res));
 
 /**
  * @openapi
@@ -150,7 +150,7 @@ router.get('/:id', (req, res) => ContributionController.getById(req, res));
  *       400:
  *         description: Estado inválido o requerimiento incompleto
  */
-router.patch('/:id/status', (req, res) => ContributionController.updateStatus(req, res));
+router.patch('/:id/status', authenticateToken, (req, res) => ContributionController.updateStatus(req, res));
 
 /**
  * @openapi
@@ -164,6 +164,6 @@ router.patch('/:id/status', (req, res) => ContributionController.updateStatus(re
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/settle-expired', (req, res) => ContributionController.settleExpiredCampaigns(req, res));
+router.post('/settle-expired', authenticateToken, (req, res) => ContributionController.settleExpiredCampaigns(req, res));
 
 export default router;

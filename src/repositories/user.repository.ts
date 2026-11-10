@@ -7,14 +7,14 @@ export class UserRepository {
   async create(userData: CreateUserDTO): Promise<User> { //Promise<User>, le estás diciendo al compilador:
     // "Esta funcion asoncrona promete resolver y entregar al final un objeto que cumple exactamente
     //  con la interfaz User
-    const { name, email, password, role = 'USER' } = userData; //Aquí le digo que los datos que ingresen deben cumplir con los del CreateUserDto
+    const { name, email, password } = userData; //Aquí le digo que los datos que ingresen deben cumplir con los del CreateUserDto
     const query = `
-      INSERT INTO public.users (name, email, password, role)
-      VALUES ($1, $2, $3, $4)
-      RETURNING id, name, email, role, created_at;
+      INSERT INTO public.users (name, email, password)
+      VALUES ($1, $2, $3)
+      RETURNING id, name, email, created_at;
     `;
     //En el metodo query le envío values me imagino que toma el orden, o sea $1 será name y así sucesivamente
-    const values = [name, email, password, role];
+    const values = [name, email, password];
     const { rows } = await pool.query(query, values); // metodo de pool que es la conexion a la base de datos
     //  query es la consulta y values son los valores que se van a insertar en la base de datos
     return rows[0];

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { CampaignService } from '../services/campaign.service';
+import { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
 const service = new CampaignService();
 
@@ -10,27 +11,30 @@ export class CampaignController {
     this.service = new CampaignService();
   }
 
-  async create(req: Request, res: Response) {
+  async create(req: AuthenticatedRequest, res: Response) {
     try {
-    const userId = (req as any).user?.id || req.body.user_id;
-
+      const userId = req.user?.id;
+    
       if (!userId) {
-        return res.status(401).json({ error: 'No autorizado. Se requiere autenticación para crear una campaña.' });
+        return res.status(401).json({ error: 'No autenticado' });
       }
-
-      // Combinamos los datos enviados por el cuerpo con el user_id verificado por el servidor
-      const campaignData = {
-        ...req.body,
-        user_id: userId, // Forzamos el ID real del token
-      };
-
-      const campaign = await this.service.createCampaign(campaignData);
+    
+      const { title, description, targetAmount, expiresAt } = req.body;
+    
+      const campaign = await this.service.createCampaign({
+        userId,
+        title,
+        description,
+        targetAmount: Number(targetAmount),
+        expiresAt,
+      });
+    
       return res.status(201).json(campaign);
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
     }
   }
-
+  
   async getAll(req: Request, res: Response) {
     try {
       const campaigns = await this.service.getAllCampaigns();

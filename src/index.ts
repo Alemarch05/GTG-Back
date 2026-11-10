@@ -23,14 +23,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/auth', refreshTokenRoutes);
 app.use('/api/contributions', contributionRoutes);
 app.use('/api/campaigns', campaignRoutes);
-
-app.use('/api/contributions', contributionRoutes);
-app.use('/api/auth', refreshTokenRoutes);
 app.use('/api/auth', authRoutes);
 
-app.use('/api/users', userRoutes);
-
-app.use('/api/campaigns', campaignRoutes);
 
 
 async function startServer() {

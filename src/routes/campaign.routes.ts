@@ -133,8 +133,6 @@ router.get('/:id', authenticateToken, (req, res) => campaignController.getById(r
  *       404:
  *         description: Campaña no encontrada
  */
-router.put('/:id', CampaignController.update);
 
-router.delete('/:id', CampaignController.delete);
 
 export default router;

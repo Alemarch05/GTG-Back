@@ -51,7 +51,6 @@ router.post('/login', (req, res) => authController.login(req, res));
 router.post('/refresh', (req, res) => authController.refresh(req, res));
 
 // Cambiar la ruta de logout para que no requiera JWT obligatoriamente (solo el body)
-router.post('/logout', (req, res) => authController.logout(req, res));
 
 /**
  * @openapi
@@ -64,8 +63,8 @@ router.post('/logout', (req, res) => authController.logout(req, res));
  *     responses:
  *       200:
  *         description: Sesión cerrada
- */
-router.post('/logout', authenticateToken, (req, res) => authController.logout(req, res));
+*/
+router.post('/logout', (req, res) => authController.logout(req, res));
 
 /**
  * @openapi
