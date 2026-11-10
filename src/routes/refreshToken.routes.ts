@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { RefreshTokenController } from '../controllers/refreshToken.controller';
+import { authenticateToken } from '../middlewares/auth.middleware';
 
 const router = Router();
 const refreshTokenController = new RefreshTokenController();
@@ -32,24 +33,17 @@ router.post('/logout', (req, res) => refreshTokenController.logout(req, res));
  * @openapi
  * /auth/revoke-all:
  *   post:
- *     summary: Revocar todas las sesiones del usuario
+ *     summary: Revocar todas las sesiones del usuario autenticado
  *     tags: [RefreshTokens]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [userId]
- *             properties:
- *               userId:
- *                 type: string
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: Todas las sesiones del usuario han sido revocadas
- *       400:
- *         description: ID de usuario requerido
+ *       401:
+ *         description: No autorizado (Token faltante o inválido)
  */
-router.post('/revoke-all', (req, res) => refreshTokenController.revokeAllSessions(req, res));
+// Protegemos la ruta con 'authenticateToken' para que inyecte req.user y eliminemos el userId inseguro del body
+router.post('/revoke-all', authenticateToken, (req, res) => refreshTokenController.revokeAllSessions(req, res));
 
 export default router;

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { RefreshTokenService } from '../services/refreshToken.service';
+import { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
 export class RefreshTokenController {
   private refreshTokenService = new RefreshTokenService();
@@ -23,9 +24,9 @@ export class RefreshTokenController {
   };
 
   // Endpoint opcional para revocar todas las sesiones del usuario
-  revokeAllSessions = async (req: Request, res: Response): Promise<void> => {
+  revokeAllSessions = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.body.userId; 
+      const userId = req.user?.id;
 
       if (!userId) {
         res.status(400).json({ error: 'ID de usuario requerido' });
