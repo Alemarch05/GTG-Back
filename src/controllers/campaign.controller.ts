@@ -12,7 +12,19 @@ export class CampaignController {
 
   async create(req: Request, res: Response) {
     try {
-      const campaign = await this.service.createCampaign(req.body);
+    const userId = (req as any).user?.id || req.body.user_id;
+
+      if (!userId) {
+        return res.status(401).json({ error: 'No autorizado. Se requiere autenticación para crear una campaña.' });
+      }
+
+      // Combinamos los datos enviados por el cuerpo con el user_id verificado por el servidor
+      const campaignData = {
+        ...req.body,
+        user_id: userId, // Forzamos el ID real del token
+      };
+
+      const campaign = await this.service.createCampaign(campaignData);
       return res.status(201).json(campaign);
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
