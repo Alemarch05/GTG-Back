@@ -47,11 +47,37 @@ export class ContributionService {
   // Obtener historial personal del usuario
   async getMyHistory(userId: string) {
     const history = await this.repository.findHistoryByUserId(userId);
+
     const totalContributed = history.reduce((sum, item) => sum + Number(item.amount), 0);
+    const totalPending = history
+      .filter((item) => item.status === 'HELD')
+      .reduce((sum, item) => sum + Number(item.amount), 0);
+    const totalReleased = history
+      .filter((item) => item.status === 'RELEASED')
+      .reduce((sum, item) => sum + Number(item.amount), 0);
+    const totalRefunded = history
+      .filter((item) => item.status === 'REFUNDED')
+      .reduce((sum, item) => sum + Number(item.amount), 0);
+
+    const contributions = history.map((item) => ({
+      contribution_id: item.contribution_id,
+      amount: Number(item.amount),
+      created_at: item.created_at,
+      status: item.status,
+      campaign_id: item.campaign_id,
+      campaign_title: item.campaign_title,
+      campaign_status: item.campaign_status
+    }));
 
     return {
+      summary: {
+        total_contributed: totalContributed,
+        total_pending: totalPending,
+        total_released: totalReleased,
+        total_refunded: totalRefunded
+      },
       total_contributed: totalContributed,
-      contributions: history
+      contributions
     };
   }
 
