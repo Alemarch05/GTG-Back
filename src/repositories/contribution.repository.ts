@@ -2,7 +2,7 @@ import { pool } from '../config/database';
 import { Contribution, CreateContributionDTO } from '../types/contribution.types';
 
 export class ContributionRepository {
-  // 1. Registrar un aporte en custodia virtual ('HELD')
+  //Registrar un aporte en custodia virtual ('HELD')
   async create(data: CreateContributionDTO): Promise<Contribution> {
     const client = await pool.connect();
     try {
@@ -26,6 +26,16 @@ export class ContributionRepository {
       if (new Date(campaign.expires_at) < new Date()) {
         throw new Error('La campaña ya ha expirado');
       }
+      const currentAmount = Number(campaign.current_amount);
+      const targetAmount = Number(campaign.target_amount);
+
+      if (currentAmount >= targetAmount) {
+        throw new Error('La campaña ya alcanzó su meta y no acepta más aportes');
+      }
+
+      if (currentAmount + data.amount > targetAmount) {
+        throw new Error('El aporte supera el monto que falta para alcanzar la meta');
+      }
       // Insertar el aporte en custodia
       const queryContribution = `
         INSERT INTO contributions (campaign_id, user_id, amount, status)
@@ -38,22 +48,19 @@ export class ContributionRepository {
         data.amount
       ]);
 
+
       const newAmount = parseFloat(campaign.current_amount) + data.amount;
-      let newCampaignStatus = campaign.status;
 
-      if (newAmount >= parseFloat(campaign.target_amount)) {
-        newCampaignStatus = 'SUCCESSFUL';
-      }
+        const queryUpdateCampaign = `
+          UPDATE campaigns
+          SET current_amount = $1
+          WHERE id = $2;
+        `;
 
-      // Sumar al acumulado de la campaña
-      const queryUpdateCampaign = `
-        UPDATE campaigns 
-        SET current_amount = $1, status = $2 
-        WHERE id = $3;
-      `;
-
-      await client.query(queryUpdateCampaign, [newAmount, newCampaignStatus, data.campaign_id]);
-      
+        await client.query(queryUpdateCampaign, [
+          newAmount,
+          data.campaign_id
+        ]);
       
       await client.query('COMMIT');
       return resContribution.rows[0];
@@ -65,20 +72,20 @@ export class ContributionRepository {
     }
   }
 
-  // 2. Obtener todos los aportes
+  // Obtener todos los aportes
   async findAll(): Promise<Contribution[]> {
     const res = await pool.query(`SELECT * FROM contributions ORDER BY created_at DESC;`);
     return res.rows;
   }
 
-  // 3. Obtener aportes de una campaña
+  // Obtener aportes de una campaña
   async findByCampaignId(campaignId: string): Promise<Contribution[]> {
     const query = `SELECT * FROM contributions WHERE campaign_id = $1 ORDER BY created_at DESC;`;
     const res = await pool.query(query, [campaignId]);
     return res.rows;
   }
 
-  // 4. Obtener aportes de un usuario (para el historial del usuario autenticado)
+  // Obtener aportes de un usuario (para el historial del usuario autenticado)
   async findByUserId(userId: string): Promise<Contribution[]> {
 const query = `
   SELECT 
@@ -116,13 +123,13 @@ const query = `
     return result.rows;
   }
 
-  // 5. Obtener un aporte por ID
+  // Obtener un aporte por ID
   async findById(id: string): Promise<Contribution | null> {
     const res = await pool.query(`SELECT * FROM contributions WHERE id = $1;`, [id]);
     return res.rows[0] || null;
   }
 
-  // 6. Actualizar estado individual
+  // Actualizar estado individual
   async updateStatus(id: string, status: 'RELEASED' | 'REFUNDED'): Promise<Contribution | null> {
     const query = `
       UPDATE contributions 
@@ -134,7 +141,7 @@ const query = `
     return res.rows[0] || null;
   }
 
-  // 7. Eliminar / Cancelar aporte
+  // Eliminar / Cancelar aporte
   async delete(id: string): Promise<boolean> {
     const client = await pool.connect();
     try {
@@ -164,7 +171,7 @@ const query = `
     }
   }
 
-  // BLOQUE 4: MOTOR TRANSACCIONAL ALL-OR-NOTHING (EXPIRACIÓN DE CAMPAÑAS)
+  // TRANSACCIONAL ALL-OR-NOTHING (EXPIRACIÓN DE CAMPAÑAS)
   async processExpiredCampaigns(): Promise<number> {
     const client = await pool.connect();
     let processedCount = 0;
@@ -172,7 +179,7 @@ const query = `
     try {
       await client.query('BEGIN'); // Transacción ACID
 
-      // 1. Bloqueo pesimista: Seleccionar campañas activas cuya fecha límite ya vencio
+      //Bloqueo pesimista: Seleccionar campañas activas cuya fecha límite ya vencio
       const expiredCampaignsQuery = `
         SELECT id, target_amount, current_amount 
         FROM campaigns 
