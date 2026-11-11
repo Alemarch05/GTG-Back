@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { ContributionController } from '../controllers/contribution.controller';
-import { authenticateToken } from '../middlewares/auth.middleware';
+import { authenticateToken, requireRole } from '../middlewares/auth.middleware';
 
 const router = Router();
 
@@ -44,7 +44,7 @@ const router = Router();
  *         description: Error interno del servidor
  */
 router.post('/', authenticateToken, (req, res) => ContributionController.create(req, res));
-router.get('/', authenticateToken, (req, res) => ContributionController.getAll(req, res));
+router.get('/', authenticateToken, requireRole('ADMIN'), (req, res) => ContributionController.getAll(req, res));
 
 /**
  * @openapi
@@ -119,38 +119,7 @@ router.get('/campaign/:campaignId', authenticateToken, (req, res) => Contributio
  */
 router.get('/:id', authenticateToken, (req, res) => ContributionController.getById(req, res));
 
-/**
- * @openapi
- * /contributions/{id}/status:
- *   patch:
- *     summary: Actualizar el estado del aporte (RELEASED o REFUNDED)
- *     tags: [Contributions]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: ID del aporte
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [status]
- *             properties:
- *               status:
- *                 type: string
- *                 enum: [RELEASED, REFUNDED]
- *                 example: "RELEASED"
- *     responses:
- *       200:
- *         description: Estado del aporte actualizado
- *       400:
- *         description: Estado inválido o requerimiento incompleto
- */
-router.patch('/:id/status', authenticateToken, (req, res) => ContributionController.updateStatus(req, res));
+
 
 /**
  * @openapi
@@ -164,6 +133,6 @@ router.patch('/:id/status', authenticateToken, (req, res) => ContributionControl
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/settle-expired', authenticateToken, (req, res) => ContributionController.settleExpiredCampaigns(req, res));
+router.post('/settle-expired', authenticateToken, requireRole('ADMIN'), (req, res) => ContributionController.settleExpiredCampaigns(req, res));
 
 export default router;
